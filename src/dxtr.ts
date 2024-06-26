@@ -1,12 +1,17 @@
-import { DexterConfig,
-  RequestConfig,
-  Dexter,
-  BaseDataProvider,
-  MockDataProvider,
-  BaseWalletProvider,
-  MockWalletProvider,
-  LiquidityPool
+import {
+    DexterConfig,
+    RequestConfig,
+    Dexter,
+    BaseDataProvider,
+    BaseWalletProvider,
+    BlockfrostProvider,
+    LucidProvider,
+    LiquidityPool
 } from '@indigo-labs/dexter'
+
+import * as fs from 'fs';
+
+const seed = fs.readFileSync('./stuff/seed', 'utf8')
 
 const dexterConfig: DexterConfig = {
     shouldFetchMetadata: true,      // Whether to fetch asset metadata (Best to leave this `true` for accurate pool info)
@@ -22,8 +27,21 @@ const requestConfig: RequestConfig = {
 
 const dexter: Dexter = new Dexter(dexterConfig, requestConfig);
 
-const mockData: BaseDataProvider = new MockDataProvider();
-const mockWallet: BaseWalletProvider = new MockWalletProvider();
+const bfData: BaseDataProvider = new BlockfrostProvider(
+    {
+        url: 'https://cardano-mainnet.blockfrost.io/api/v0',
+        projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
+    }
+);
+
+const lucidProvider: BaseWalletProvider = new LucidProvider();
+lucidProvider.loadWalletFromSeedPhrase(seed.split(" "), {}, {
+    url: 'https://cardano-mainnet.blockfrost.io/api/v0',
+    projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
+})
+
+console.log(seed.split(" "))
+console.log(lucidProvider)
 
 // Basic fetch example
 dexter.newFetchRequest()
