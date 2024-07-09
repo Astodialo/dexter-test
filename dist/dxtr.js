@@ -1,4 +1,4 @@
-import { Dexter, BlockfrostProvider, LucidProvider, DexTransaction, Asset, } from '@indigo-labs/dexter';
+import { Dexter, BlockfrostProvider, LucidProvider, DexTransaction, Asset } from '@indigo-labs/dexter';
 import { Blockfrost, Lucid, } from 'lucid-cardano';
 import * as fs from 'fs';
 const seed = fs.readFileSync('./stuff/seed', 'utf8');
@@ -6,16 +6,13 @@ const seed2 = fs.readFileSync('./stuff/seed', 'utf8');
 const fee_addr = "";
 const raid_amt = 100n;
 const fee_amt = raid_amt * 2n / 10n;
-const token = "";
-const nov4 = new Asset("98feb5c8619c0314ac0787bc59b0e63ad6c4232551fa35f1f735b1aa4e4f5634", "NOV4", 10);
+const nov4ID = "98feb5c8619c0314ac0787bc59b0e63ad6c4232551fa35f1f735b1aa4e4f5634";
+const nov4 = new Asset(nov4ID, '4e4f5634', 6);
+const bfConfig = {
+    url: 'https://cardano-mainnet.blockfrost.io/api/v0',
+    projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
+};
 const lucid = await Lucid.new(new Blockfrost("https://cardano-mainnet.blockfrost.io/api/v0", "mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78"), "Mainnet");
-function createFeeTx() {
-    const transaction = new DexTransaction(lucidProvider);
-    transaction.providerData.tx = lucid
-        .newTx()
-        .payToAddress(fee_addr, { [token]: (fee_amt) });
-    return transaction;
-}
 const dexterConfig = {
     shouldFetchMetadata: true, // Whether to fetch asset metadata (Best to leave this `true` for accurate pool info)
     shouldFallbackToApi: true, // Only use when using Blockfrost or Kupo as data providers. On failure, fallback to the DEX API to grab necessary data
@@ -28,20 +25,32 @@ const requestConfig = {
     retries: 3, // Number of times to reattempt any outside request
 };
 const dexter = new Dexter(dexterConfig, requestConfig);
-const bfData = new BlockfrostProvider({
-    url: 'https://cardano-mainnet.blockfrost.io/api/v0',
-    projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
+const provider = new BlockfrostProvider(bfConfig);
+const walletProvider = new LucidProvider();
+walletProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, bfConfig)
+    .then((walletProvider) => {
+    dexter.withWalletProvider(walletProvider)
+        .newFetchRequest()
+        .onAllDexs()
+        .getLiquidityPools()
+        .then((pools) => {
+        console.log(pools);
+    });
 });
-const lucidProvider = new LucidProvider();
-lucidProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, {
-    url: 'https://cardano-mainnet.blockfrost.io/api/v0',
-    projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
-});
-console.log(seed.split(" "));
-console.log(lucidProvider);
+function createFeeTx() {
+    const transaction = new DexTransaction(walletProvider);
+    transaction.providerData.tx = lucid
+        .newTx()
+        .payToAddress(fee_addr, { [nov4ID]: (fee_amt) });
+    return transaction;
+}
+console.log(Dexter);
+console.log(provider);
+console.log(walletProvider);
 // Basic fetch example
 dexter.newFetchRequest()
     .onAllDexs()
+    .forTokens([nov4])
     .getLiquidityPools()
     .then((pools) => {
     console.log(pools);

@@ -9,6 +9,7 @@ import {
     LiquidityPool,
     DexTransaction,
     Asset,
+    BlockfrostConfig
 } from '@indigo-labs/dexter'
 import {
     Blockfrost,
@@ -21,8 +22,13 @@ const seed2 = fs.readFileSync('./stuff/seed', 'utf8')
 const fee_addr = "";
 const raid_amt = 100n;
 const fee_amt = raid_amt * 2n / 10n
-const token = ""
-const nov4 = new Asset("98feb5c8619c0314ac0787bc59b0e63ad6c4232551fa35f1f735b1aa4e4f5634", "NOV4", 10)
+const nov4ID = "98feb5c8619c0314ac0787bc59b0e63ad6c4232551fa35f1f735b1aa4e4f5634"
+const nov4 = new Asset(nov4ID, '4e4f5634', 6)
+
+const bfConfig: BlockfrostConfig = {
+    url: 'https://cardano-mainnet.blockfrost.io/api/v0',
+    projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
+};
 
 const lucid = await Lucid.new(
     new Blockfrost(
@@ -31,15 +37,6 @@ const lucid = await Lucid.new(
     ),
     "Mainnet",
 );
-
-function createFeeTx(): DexTransaction {
-    const transaction: DexTransaction = new DexTransaction(lucidProvider);
-    transaction.providerData.tx = lucid
-        .newTx()
-        .payToAddress(fee_addr, { [token]: (fee_amt) });
-
-    return transaction;
-}
 
 const dexterConfig: DexterConfig = {
     shouldFetchMetadata: true,      // Whether to fetch asset metadata (Best to leave this `true` for accurate pool info)
@@ -55,26 +52,37 @@ const requestConfig: RequestConfig = {
 
 const dexter: Dexter = new Dexter(dexterConfig, requestConfig);
 
-const bfData: BaseDataProvider = new BlockfrostProvider(
-    {
-        url: 'https://cardano-mainnet.blockfrost.io/api/v0',
-        projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
-    }
-);
+const provider: BaseDataProvider = new BlockfrostProvider(bfConfig);
 
-const lucidProvider: LucidProvider = new LucidProvider();
-lucidProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, {
-    url: 'https://cardano-mainnet.blockfrost.io/api/v0',
-    projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
-})
+const walletProvider: BaseWalletProvider = new LucidProvider();
+
+walletProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, bfConfig)
+    .then((walletProvider: BaseWalletProvider) => {
+        dexter.withWalletProvider(walletProvider)
+            .newFetchRequest()
+            .onAllDexs()
+            .getLiquidityPools()
+            .then((pools: LiquidityPool[]) => {
+                console.log(pools);
+            });
+    });
 
 
-console.log(seed.split(" "))
-console.log(lucidProvider)
+function createFeeTx(): DexTransaction {
+    const transaction: DexTransaction = new DexTransaction(walletProvider);
+    transaction.providerData.tx = lucid
+        .newTx()
+        .payToAddress(fee_addr, { [nov4ID]: (fee_amt) });
+
+    return transaction;
+}
+
+console.log(walletProvider)
 
 // Basic fetch example
 dexter.newFetchRequest()
     .onAllDexs()
+    .forTokens([nov4])
     .getLiquidityPools()
     .then((pools: LiquidityPool[]) => {
         console.log(pools);
