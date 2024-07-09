@@ -8,6 +8,7 @@ import {
     LucidProvider,
     LiquidityPool,
     DexTransaction,
+    Asset,
 } from '@indigo-labs/dexter'
 import {
     Blockfrost,
@@ -16,10 +17,12 @@ import {
 import * as fs from 'fs';
 
 const seed = fs.readFileSync('./stuff/seed', 'utf8')
+const seed2 = fs.readFileSync('./stuff/seed', 'utf8')
 const fee_addr = "";
 const raid_amt = 100n;
 const fee_amt = raid_amt * 2n / 10n
 const token = ""
+const nov4 = new Asset("98feb5c8619c0314ac0787bc59b0e63ad6c4232551fa35f1f735b1aa4e4f5634", "NOV4", 10)
 
 const lucid = await Lucid.new(
     new Blockfrost(
@@ -60,7 +63,7 @@ const bfData: BaseDataProvider = new BlockfrostProvider(
 );
 
 const lucidProvider: LucidProvider = new LucidProvider();
-lucidProvider.loadWalletFromSeedPhrase(seed.split(" "), {}, {
+lucidProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, {
     url: 'https://cardano-mainnet.blockfrost.io/api/v0',
     projectId: 'mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78',
 })
@@ -76,3 +79,9 @@ dexter.newFetchRequest()
     .then((pools: LiquidityPool[]) => {
         console.log(pools);
     });
+
+dexter.newSwapRequest()
+    .withSwapInToken(nov4)
+    .withSwapOutToken('lovelace')
+    .withSwapInAmount(raid_amt - fee_amt)
+    .submit()
