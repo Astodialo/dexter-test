@@ -1,4 +1,4 @@
-import { Dexter, BlockfrostProvider, LucidProvider, DexTransaction, Asset } from '@indigo-labs/dexter';
+import { Dexter, BlockfrostProvider, LucidProvider, DexTransaction, Asset, TokenRegistryProvider } from '@indigo-labs/dexter';
 import { Blockfrost, Lucid, } from 'lucid-cardano';
 import * as fs from 'fs';
 const seed = fs.readFileSync('./stuff/seed', 'utf8');
@@ -26,16 +26,21 @@ const requestConfig = {
 };
 const dexter = new Dexter(dexterConfig, requestConfig);
 const provider = new BlockfrostProvider(bfConfig);
+const metadataProvider = new TokenRegistryProvider();
 const walletProvider = new LucidProvider();
 walletProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, bfConfig)
     .then((walletProvider) => {
-    dexter.withWalletProvider(walletProvider)
+    dexter.withDataProvider(provider)
+        .withWalletProvider(walletProvider)
+        .withMetadataProvider(metadataProvider)
         .newFetchRequest()
         .onAllDexs()
+        .forTokens([nov4])
         .getLiquidityPools()
         .then((pools) => {
         console.log(pools);
     });
+    console.log(nov4ID);
 });
 function createFeeTx() {
     const transaction = new DexTransaction(walletProvider);
@@ -44,19 +49,8 @@ function createFeeTx() {
         .payToAddress(fee_addr, { [nov4ID]: (fee_amt) });
     return transaction;
 }
-console.log(Dexter);
-console.log(provider);
-console.log(walletProvider);
-// Basic fetch example
-dexter.newFetchRequest()
-    .onAllDexs()
-    .forTokens([nov4])
-    .getLiquidityPools()
-    .then((pools) => {
-    console.log(pools);
-});
-dexter.newSwapRequest()
-    .withSwapInToken(nov4)
-    .withSwapOutToken('lovelace')
-    .withSwapInAmount(raid_amt - fee_amt)
-    .submit();
+//dexter.newSwapRequest()
+//    .withSwapInToken(nov4)
+//    .withSwapOutToken('lovelace')
+//    .withSwapInAmount(raid_amt - fee_amt)
+//    .submit()

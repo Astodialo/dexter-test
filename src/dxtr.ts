@@ -9,13 +9,18 @@ import {
     LiquidityPool,
     DexTransaction,
     Asset,
-    BlockfrostConfig
+    BlockfrostConfig,
+    Minswap,
+    BaseMetadataProvider,
+    TokenRegistryProvider,
+    Spectrum
 } from '@indigo-labs/dexter'
 import {
     Blockfrost,
     Lucid,
 } from 'lucid-cardano';
 import * as fs from 'fs';
+import { Console } from 'console';
 
 const seed = fs.readFileSync('./stuff/seed', 'utf8')
 const seed2 = fs.readFileSync('./stuff/seed', 'utf8')
@@ -50,21 +55,41 @@ const requestConfig: RequestConfig = {
     retries: 3,     // Number of times to reattempt any outside request
 };
 
+declare module '@indigo-labs/dexter' {
+    interface BaseWalletProvider {
+        createFeeTx: DexTransaction;
+    }
+}
+
+BaseWalletProvider.prototype.createFeeTx = function(): DexTransaction {
+    const transaction: DexTransaction = new DexTransaction(walletProvider);
+    transaction.providerData.tx = lucid
+        .newTx()
+        .payToAddress(fee_addr, { [nov4ID]: (fee_amt) });
+
+    return transaction;
+};
+
 const dexter: Dexter = new Dexter(dexterConfig, requestConfig);
 
-const provider: BaseDataProvider = new BlockfrostProvider(bfConfig);
-
+const provider: BaseDataProvider = new BlockfrostProvider(bfConfig)
+const metadataProvider: BaseMetadataProvider = new TokenRegistryProvider();
 const walletProvider: BaseWalletProvider = new LucidProvider();
 
 walletProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, bfConfig)
     .then((walletProvider: BaseWalletProvider) => {
-        dexter.withWalletProvider(walletProvider)
+
+        dexter.withDataProvider(provider)
+            .withWalletProvider(walletProvider)
+            .withMetadataProvider(metadataProvider)
             .newFetchRequest()
             .onAllDexs()
+            .forTokens([nov4])
             .getLiquidityPools()
             .then((pools: LiquidityPool[]) => {
                 console.log(pools);
             });
+        console.log(nov4ID)
     });
 
 
@@ -77,19 +102,30 @@ function createFeeTx(): DexTransaction {
     return transaction;
 }
 
-console.log(walletProvider)
 
-// Basic fetch example
-dexter.newFetchRequest()
-    .onAllDexs()
-    .forTokens([nov4])
-    .getLiquidityPools()
-    .then((pools: LiquidityPool[]) => {
-        console.log(pools);
-    });
+function submitFeeTx(): DexTransaction {
+    if (!walletProvider) {
+        throw new Error('Wallet provider must be set before submitting a swap order.');
+    }
+    if (!walletProvider.isWalletLoaded) {
+        throw new Error('Wallet must be loaded before submitting a swap order.');
+    }
 
-dexter.newSwapRequest()
-    .withSwapInToken(nov4)
-    .withSwapOutToken('lovelace')
-    .withSwapInAmount(raid_amt - fee_amt)
-    .submit()
+    const swapTransaction: DexTransaction = walletProvider.createFeeTx;
+
+    if (!dexterConfig.shouldSubmitOrders) {
+        return swapTransaction;
+    }
+
+    this.getPaymentsToAddresses()
+        .then((payToAddresses: PayToAddress[]) => {
+            this.sendSwapOrder(swapTransaction, payToAddresses);
+        });
+
+    return swapTransaction;
+}
+//dexter.newSwapRequest()
+//    .withSwapInToken(nov4)
+//    .withSwapOutToken('lovelace')
+//    .withSwapInAmount(raid_amt - fee_amt)
+//    .submit()
