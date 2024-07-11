@@ -61,14 +61,14 @@ declare module '@indigo-labs/dexter' {
     }
 }
 
-BaseWalletProvider.prototype.createFeeTx = function(): DexTransaction {
-    const transaction: DexTransaction = new DexTransaction(walletProvider);
-    transaction.providerData.tx = lucid
-        .newTx()
-        .payToAddress(fee_addr, { [nov4ID]: (fee_amt) });
-
-    return transaction;
-};
+//BaseWalletProvider.prototype.createFeeTx = function(): DexTransaction {
+//    const transaction: DexTransaction = new DexTransaction(walletProvider);
+//    transaction.providerData.tx = lucid
+//       .newTx()
+//        .payToAddress(fee_addr, { [nov4ID]: (fee_amt) });
+//
+//    return transaction;
+//};
 
 const dexter: Dexter = new Dexter(dexterConfig, requestConfig);
 
@@ -103,27 +103,27 @@ function createFeeTx(): DexTransaction {
 }
 
 
-function submitFeeTx(): DexTransaction {
-    if (!walletProvider) {
-        throw new Error('Wallet provider must be set before submitting a swap order.');
-    }
-    if (!walletProvider.isWalletLoaded) {
-        throw new Error('Wallet must be loaded before submitting a swap order.');
-    }
-
-    const swapTransaction: DexTransaction = walletProvider.createFeeTx;
-
-    if (!dexterConfig.shouldSubmitOrders) {
-        return swapTransaction;
-    }
-
-    this.getPaymentsToAddresses()
-        .then((payToAddresses: PayToAddress[]) => {
-            this.sendSwapOrder(swapTransaction, payToAddresses);
-        });
-
-    return swapTransaction;
-}
+//function submitFeeTx(): DexTransaction {
+//    if (!walletProvider) {
+//        throw new Error('Wallet provider must be set before submitting a swap order.');
+//    }
+//    if (!walletProvider.isWalletLoaded) {
+//        throw new Error('Wallet must be loaded before submitting a swap order.');
+//   }
+//
+//    const swapTransaction: DexTransaction = walletProvider.createFeeTx;
+//
+//    if (!dexterConfig.shouldSubmitOrders) {
+//        return swapTransaction;
+//    }
+//
+//    this.getPaymentsToAddresses()
+//        .then((payToAddresses: PayToAddress[]) => {
+//            this.sendSwapOrder(swapTransaction, payToAddresses);
+//        });
+//
+//    return swapTransaction;
+//}
 //dexter.newSwapRequest()
 //    .withSwapInToken(nov4)
 //    .withSwapOutToken('lovelace')

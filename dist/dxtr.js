@@ -24,6 +24,14 @@ const requestConfig = {
     proxyUrl: '', // URL to prepend to all outside URLs. Useful when dealing with CORs
     retries: 3, // Number of times to reattempt any outside request
 };
+//BaseWalletProvider.prototype.createFeeTx = function(): DexTransaction {
+//    const transaction: DexTransaction = new DexTransaction(walletProvider);
+//    transaction.providerData.tx = lucid
+//       .newTx()
+//        .payToAddress(fee_addr, { [nov4ID]: (fee_amt) });
+//
+//    return transaction;
+//};
 const dexter = new Dexter(dexterConfig, requestConfig);
 const provider = new BlockfrostProvider(bfConfig);
 const metadataProvider = new TokenRegistryProvider();
@@ -49,6 +57,27 @@ function createFeeTx() {
         .payToAddress(fee_addr, { [nov4ID]: (fee_amt) });
     return transaction;
 }
+//function submitFeeTx(): DexTransaction {
+//    if (!walletProvider) {
+//        throw new Error('Wallet provider must be set before submitting a swap order.');
+//    }
+//    if (!walletProvider.isWalletLoaded) {
+//        throw new Error('Wallet must be loaded before submitting a swap order.');
+//   }
+//
+//    const swapTransaction: DexTransaction = walletProvider.createFeeTx;
+//
+//    if (!dexterConfig.shouldSubmitOrders) {
+//        return swapTransaction;
+//    }
+//
+//    this.getPaymentsToAddresses()
+//        .then((payToAddresses: PayToAddress[]) => {
+//            this.sendSwapOrder(swapTransaction, payToAddresses);
+//        });
+//
+//    return swapTransaction;
+//}
 //dexter.newSwapRequest()
 //    .withSwapInToken(nov4)
 //    .withSwapOutToken('lovelace')
