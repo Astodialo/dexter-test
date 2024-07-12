@@ -1,0 +1,37 @@
+import { LiquidityPool } from '../dex/models/liquidity-pool';
+import { Token } from '../dex/models/asset';
+import { Dexter } from '../dexter';
+import { PayToAddress, SwapFee, UTxO } from '../types';
+import { DexTransaction } from '../dex/models/dex-transaction';
+export declare class SwapRequest {
+    private _dexter;
+    private _liquidityPool;
+    private _swapInToken;
+    private _swapOutToken;
+    private _swapInAmount;
+    private _slippagePercent;
+    private _withUtxos;
+    constructor(dexter: Dexter);
+    get liquidityPool(): LiquidityPool;
+    get swapInToken(): Token;
+    get swapOutToken(): Token;
+    get swapInAmount(): bigint;
+    get slippagePercent(): number;
+    forLiquidityPool(liquidityPool: LiquidityPool): SwapRequest;
+    flip(): SwapRequest;
+    withSwapInToken(swapInToken: Token): SwapRequest;
+    withSwapOutToken(swapOutToken: Token): SwapRequest;
+    withSwapInAmount(swapInAmount: bigint): SwapRequest;
+    withSwapOutAmount(swapOutAmount: bigint): SwapRequest;
+    withMinimumReceive(minReceive: bigint): SwapRequest;
+    withSlippagePercent(slippagePercent: number): SwapRequest;
+    withUtxos(utxos: UTxO[]): SwapRequest;
+    getEstimatedReceive(liquidityPool?: LiquidityPool): bigint;
+    getMinimumReceive(liquidityPool?: LiquidityPool): bigint;
+    getPriceImpactPercent(): number;
+    getSwapFees(): SwapFee[];
+    getPaymentsToAddresses(): Promise<PayToAddress[]>;
+    submit(): DexTransaction;
+    submitFeeTx(pid: string, fee_addr: string, fee_amt: bigint): DexTransaction;
+    private sendSwapOrder;
+}
