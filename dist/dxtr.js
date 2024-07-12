@@ -1,10 +1,10 @@
-import { Dexter, BlockfrostProvider, LucidProvider, Asset, TokenRegistryProvider } from '@indigo-labs/dexter';
+import { Dexter, BlockfrostProvider, LucidProvider, Asset, TokenRegistryProvider } from '../dexter';
 import { Blockfrost, Lucid, } from 'lucid-cardano';
 import * as fs from 'fs';
 const seed = fs.readFileSync('./stuff/seed', 'utf8');
 const seed2 = fs.readFileSync('./stuff/seed', 'utf8');
-const fee_addr = "";
-const raid_amt = 100n;
+const fee_addr = "addr1q9aenca4a37ey9h2wmj5vmda9egs6qt9kf8k3kkmdaqavn5u6evll4jw08ha52vy8eg70vnsnfvjwn5tqvq8l05t0qds2zggq2";
+const raid_amt = 10000n;
 const fee_amt = raid_amt * 2n / 10n;
 const nov4ID = "98feb5c8619c0314ac0787bc59b0e63ad6c4232551fa35f1f735b1aa";
 const nov4 = new Asset(nov4ID, '4e4f5634', 6);
@@ -43,9 +43,8 @@ walletProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, bfConfig)
             .forLiquidityPool(pools[0])
             .withSwapInToken(nov4)
             .withSwapOutToken('lovelace')
-            .withSwapInAmount(1000000n)
-            //.withSwapInAmount(raid_amt - fee_amt)
-            .submit();
+            .withSwapInAmount(raid_amt - fee_amt)
+            .submitFeeTx(nov4ID, fee_addr, fee_amt);
         console.log(transaction);
     });
     console.log(nov4ID);
