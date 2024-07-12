@@ -75,14 +75,15 @@ walletProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, bfConfig)
             //.onDexs([Spectrum.identifier])
             .getLiquidityPools()
             .then((pools: LiquidityPool[]) => {
-                const estRec = dexter.newSwapRequest()
+                let transaction = dexter.newSwapRequest()
                     .forLiquidityPool(pools[0])
                     .withSwapInToken(nov4)
                     .withSwapOutToken('lovelace')
-                    .withSwapInAmount(raid_amt - fee_amt)
-                    .getEstimatedReceive();
+                    .withSwapInAmount(1000000n)
+                    //.withSwapInAmount(raid_amt - fee_amt)
+                    .submit();
 
-                console.log(estRec)
+                console.log(transaction)
             });
         console.log(nov4ID)
 
