@@ -47,7 +47,7 @@ const lucid = await Lucid.new(
 );
 
 const dexterConfig: DexterConfig = {
-    shouldFetchMetadata: false,      // Whether to fetch asset metadata (Best to leave this `true` for accurate pool info)
+    shouldFetchMetadata: true,      // Whether to fetch asset metadata (Best to leave this `true` for accurate pool info)
     shouldFallbackToApi: true,      // Only use when using Blockfrost or Kupo as data providers. On failure, fallback to the DEX API to grab necessary data
     shouldSubmitOrders: true,      // Allow Dexter to submit orders from swap requests. Useful during development
     metadataMsgBranding: 'Dexter',  // Prepend branding name in Tx message

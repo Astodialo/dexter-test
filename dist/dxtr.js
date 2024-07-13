@@ -15,7 +15,7 @@ const bfConfig = {
 };
 const lucid = await Lucid.new(new Blockfrost("https://cardano-mainnet.blockfrost.io/api/v0", "mainnetSilnqcY9CHmK7l2AzXAlX7HEaoLchT78"), "Mainnet");
 const dexterConfig = {
-    shouldFetchMetadata: false, // Whether to fetch asset metadata (Best to leave this `true` for accurate pool info)
+    shouldFetchMetadata: true, // Whether to fetch asset metadata (Best to leave this `true` for accurate pool info)
     shouldFallbackToApi: true, // Only use when using Blockfrost or Kupo as data providers. On failure, fallback to the DEX API to grab necessary data
     shouldSubmitOrders: true, // Allow Dexter to submit orders from swap requests. Useful during development
     metadataMsgBranding: 'Dexter', // Prepend branding name in Tx message
@@ -45,7 +45,7 @@ walletProvider.loadWalletFromSeedPhrase(seed2.split(" "), {}, bfConfig)
             .withMetadataProvider(metadataProvider)
             .newSwapRequest()
             .forLiquidityPool(pools[0])
-            .withSwapInToken(pools[0].assetB)
+            .withSwapInToken(nov4)
             .withSwapOutToken('lovelace')
             .withSwapInAmount(1000n)
             .submit();
