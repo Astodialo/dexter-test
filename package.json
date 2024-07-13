@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@indigo-labs/dexter": "^5.2.0",
+    "deno": "^0.1.1",
     "fs": "^0.0.1-security",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.5.2"
